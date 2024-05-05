@@ -5,6 +5,7 @@ import { NavigationContainer } from '@react-navigation/native'
 import { useAuth } from '../hooks/useAuth'
 import Home from '../components/screens/home/Home'
 import Auth from '../components/auth/Auth'
+import Map from '../components/maps/Map'
 
 
 
@@ -18,7 +19,7 @@ const Navigation: FC = () => {
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {user ? (
           <>
-            <Stack.Screen name="Home" component={Home} />
+            <Stack.Screen name="Map" component={Map} />
           </>
         ) : (
           <Stack.Screen name="Auth" component={Auth} />
