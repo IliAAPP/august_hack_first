@@ -1,6 +1,6 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { Alert, StyleSheet, Text, TouchableOpacity, View, TextInput, FlatList, Keyboard } from 'react-native';
 import MapView, { Callout, Marker, PROVIDER_GOOGLE, Region } from 'react-native-maps';
-import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { markers } from './markers';
 import Footer from '../screens/Footer';
@@ -23,6 +23,12 @@ const INITIAL_REGION = {
 export default function Map() {
   const mapRef = useRef(null);
   const navigation = useNavigation();
+  const [searchText, setSearchText] = useState('');
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  const filteredMarkers = markers.filter((marker) => 
+    marker.name.toLowerCase().includes(searchText.toLowerCase())
+  );
 
   useEffect(() => {
     navigation.setOptions({
@@ -74,8 +80,45 @@ export default function Map() {
     });
   };
 
+  const renderSuggestionItem = ({ item }) => (
+    <TouchableOpacity
+      style={styles.suggestionItem}
+      onPress={() => {
+        setSearchText(item.name);
+        setShowSuggestions(false);
+        Keyboard.dismiss();
+        mapRef.current?.animateToRegion({
+          latitude: item.latitude,
+          longitude: item.longitude,
+          latitudeDelta: 0.01,
+          longitudeDelta: 0.01,
+        }, 1000); 
+      }}
+    >
+      <Text style={styles.suggestionText}>{item.name}</Text>
+    </TouchableOpacity>
+  );
+
   return (
     <View style={{ flex: 1 }}>
+      <TextInput
+        style={styles.searchBar}
+        placeholder="Поиск по адресу..."
+        placeholderTextColor='white'
+        onChangeText={(text) => {
+          setSearchText(text);
+          setShowSuggestions(true);
+        }}
+        value={searchText}
+      />
+      {showSuggestions && (
+        <FlatList
+          data={filteredMarkers}
+          renderItem={renderSuggestionItem}
+          keyExtractor={(item, index) => index.toString()}
+          style={styles.suggestionsList}
+        />
+      )}
       <MapView
         style={StyleSheet.absoluteFillObject}
         initialRegion={INITIAL_REGION}
@@ -85,7 +128,7 @@ export default function Map() {
         ref={mapRef}
         onRegionChangeComplete={onRegionChange}
       >
-        {markers.map((marker, index) => (
+        {filteredMarkers.map((marker, index) => (
           <Marker
             key={index}
             title={marker.name}
@@ -114,13 +157,41 @@ export default function Map() {
 }
 
 const styles = StyleSheet.create({
-    zoomButtons: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'flex-end',
-        borderRadius: 20,
-        padding: 10
-      },
+  searchBar: {
+    fontSize: 18,
+    margin: 10,
+    marginTop: 40,
+    padding: 10,
+    backgroundColor: 'black',
+    color:'white',
+    borderRadius: 10,
+    zIndex: 1
+  },
+  suggestionsList: {
+    position: 'absolute',
+    top: 80,
+    left: 10,
+    right: 10,
+    backgroundColor: 'white',
+    zIndex: 2,
+    maxHeight: 200, 
+  },
+  suggestionItem: {
+    backgroundColor: 'white',
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: 'lightgray',
+  },
+  suggestionText: {
+    fontSize: 18,
+    color: 'black',
+  },
+  zoomButtons: {
+    position: 'absolute', // Используйте абсолютное позиционирование
+    bottom: 50, // Отступ снизу
+    right: 10, // Отступ справа
+    padding: 10,
+  },
   zoomButton: {
     alignItems: 'center',
     justifyContent: 'center',
@@ -128,11 +199,10 @@ const styles = StyleSheet.create({
     marginVertical: 5,
     width: 50,
     height: 50,
-    borderRadius: 30
+    borderRadius: 25, // Сделайте кнопки более круглыми
   },
   zoomText: {
     fontSize: 27,
     color: 'white',
-    
   },
 });
