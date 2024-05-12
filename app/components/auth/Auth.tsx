@@ -7,8 +7,10 @@ import Field from '../ui/Field';
 import Button from '../ui/Button';
 
 interface IData {
-  email: string
-  password: string
+  email: string;
+  password: string;
+  phone: string; 
+  fullName: string; 
 }
 
 
@@ -19,10 +21,20 @@ const Auth = () => {
   const [isReg, setIsReg] = useState(false);
 
   const authHandler = async () => {
-    const {email, password} = data
+    const {email, password, phone, fullName} = data;
 
-    if(isReg) await register(email, password)
-    else await login(email, password)
+    const userData = {
+      email,
+      password,
+      phone,
+      fullName
+    };
+
+    if(isReg) {
+      await register(userData)
+    } else {
+      await login(email, password)
+    }
 
     setData({} as IData)
 
@@ -34,14 +46,23 @@ const Auth = () => {
         <View style={tw`w-9/12`}>
 
           <Text style={tw`text-center text-gray-800 text-2xl font-bold mb-2`}>
-            {isReg ? 'Sign Up' : 'Sign in'}
+            {isReg ? 'Зарегистрироваться и войти' : 'Войти'}
           </Text>     
 
         {isLoading ? <Loader/> : <></>}
-        <Field val={data.email} placeholder='Enter email' 
+        <Field val={data.email} placeholder='Введите ваш email' 
         onChange={val => setData({...data, email: val})}/>
 
-        <Field val={data.password} placeholder='Enter password' 
+        {isReg && (
+            <>
+              <Field val={data.phone} placeholder='Введите ваш номер телефона' 
+                onChange={val => setData({...data, phone: val})}/>
+              <Field val={data.fullName} placeholder='Введите ваше ФИО' 
+                onChange={val => setData({...data, fullName: val})}/>
+            </>
+          )}
+
+        <Field val={data.password} placeholder='Введите пароль' 
         onChange={val => setData({...data, password: val})}
         isSecure={true}/>
 

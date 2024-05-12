@@ -8,7 +8,7 @@ interface ILayout {
 }
 
 const Layout: FC<ILayout> = ({ children, isScrollView = true }) => {
-  const styleCenter = tw`h-full w-full bg-white pt-16`
+  const styleCenter = tw`h-full w-full pt-16`
 
   return (
     <View style={styleCenter}>

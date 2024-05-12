@@ -1,50 +1,47 @@
 import React, { createContext, useEffect, useMemo, useState, ReactNode } from 'react';
 import { User, onAuthStateChanged } from 'firebase/auth';
 import { Alert } from 'react-native';
-import { auth, db, login, logout, register} from '../utils/firebase'
+import { auth, db, login, logout, register } from '../utils/firebase';
 import { addDoc, collection } from '@firebase/firestore';
 
+// Обновленный интерфейс IContext с новыми параметрами для register
 interface IContext {
-    user: User | null;
-    isLoading: boolean;
-    login: (email: string, password: string) => Promise<void>;
-    logout: () => Promise<void>;
-    register: (email: string, password: string) => Promise<void>;
+  user: User | null;
+  isLoading: boolean;
+  login: (email: string, password: string) => Promise<void>;
+  logout: () => Promise<void>;
+  register: (userData: { email: string; password: string; phone: string; fullName: string; }) => Promise<void>;
 }
 
 export const AuthContext = createContext<IContext>({} as IContext);
 
-// Добавлены типы для пропсов, включая children
 interface AuthProviderProps {
-    children: ReactNode;
-    user: User | null
-    isLoading: boolean
-    register: (email: string, password: string) => Promise<void>
-    login: (email: string, password: string) => Promise<void>
-    logout: () => Promise<void>
+  children: ReactNode;
 }
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
-    const [user, setUser] = useState<User | null>(null);
-    const [isLoadingInitial, setIsLoadingInitial] = useState(true);
-    const [isLoading, setIsLoading] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoadingInitial, setIsLoadingInitial] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
-    const registerHandler = async (email: string, password: string) => {
-        setIsLoading(true);
-        try {
-            const { user } = await register(email, password);
-
-            await addDoc(collection(db, 'users'), {
-                _id: user.uid, 
-                displayName: 'No name',
-            });
-        } catch (error: any) {
-            // Изменено error на error.message
-            Alert.alert('Error reg', error.message);
-        } finally {
-            setIsLoading(false);
-        }
-    };
+  // Обновленная функция registerHandler для обработки дополнительных данных
+  const registerHandler = async (userData: { email: string; password: string; phone: string; fullName: string; }) => {
+    setIsLoading(true);
+    try {
+      const { user } = await register(userData.email, userData.password);
+      // Добавление phone и fullName в базу данных
+      await addDoc(collection(db, 'users'), {
+        _id: user.uid,
+        email: userData.email,
+        phone: userData.phone,
+        fullName: userData.fullName,
+      });
+    } catch (error: any) {
+      Alert.alert('Error reg', error.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
     const loginHandler = async (email: string, password: string) => {
         setIsLoading(true);
