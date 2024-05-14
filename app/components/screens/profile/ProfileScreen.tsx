@@ -1,10 +1,11 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { View, Text, Image, StyleSheet, TouchableHighlight } from 'react-native';
+import { View, Text, Image, StyleSheet, TouchableHighlight, ActivityIndicator } from 'react-native';
 import { doc, onSnapshot } from '@firebase/firestore';
 import { AuthContext } from '../../../providers/AuthProvider'; 
 import Layout from '../../layout/Layout';
 import Footer from '../Footer';
 import { auth, db, login, logout, register } from '../../../utils/firebase'
+import { useProfile } from './useProfile';
 
 interface UserData {
   fullName: string;
@@ -12,36 +13,14 @@ interface UserData {
   email: string;
   imageUrl?: string; 
 }
-
-interface UserData {
-  fullName: string;
-  phone: string;
-  email: string;
-  imageUrl?: string; 
-}
-
 
 const ProfileScreen = () => {
-  const { user } = useContext(AuthContext);
-  const [profileData, setProfileData] = useState<UserData>({
-    fullName: '',
-    phone: '',
-    email: '',
-    imageUrl: '../../../../assets/profile_man_user.jpg' // Путь к изображению по умолчанию
-  });
+  const { profile, isLoading } = useProfile(); // Используем хук useProfile для получения данных профиля
 
-  useEffect(() => {
-    if (user && user.uid) { // Используем user.uid вместо user._id
-      const unsubscribe = onSnapshot(doc(db, 'users', user.uid), (documentSnapshot) => {
-        const userData = documentSnapshot.data() as UserData; // Приведение типа к UserData
-        if (userData) {
-          setProfileData(userData); // Обновление состояния данными пользователя
-        }
-      });
-  
-      return () => unsubscribe(); // Отписка от слушателя при размонтировании компонента
-    }
-  }, [user]);
+  // Если данные профиля загружаются, отобразим индикатор загрузки
+  if (isLoading) {
+    return <ActivityIndicator />;
+  }
 
 
   return (
@@ -55,13 +34,13 @@ const ProfileScreen = () => {
 
             <View style={{backgroundColor: 'white', width: '90%', marginLeft: 20, borderRadius: 30, padding: 15, paddingHorizontal: 20}}>
               <View style={{ alignItems: 'flex-start', marginLeft: 20, flexDirection: 'row', marginTop: 20, marginBottom:20 }}>
-                <Image source={{ uri: profileData.imageUrl }} style={{ width: 70, height: 70, borderRadius: 40 }}  />
+                <Image source={require('../../../../assets/profile_man_user.jpg')} style={{ width: 70, height: 70, borderRadius: 40 }}  />
                 <View style={{ flexDirection: 'column', marginLeft: 20, justifyContent: 'center' }}>
-                  <Text style={{ fontSize: 18, fontWeight: '500', marginBottom: 5 }}>{profileData.fullName}</Text>
-                  <Text style={{ fontSize: 12, color: 'gray' }}>{profileData.phone}</Text>
-                  <Text style={{ fontSize: 12, color: 'gray' }}>{profileData.email}</Text>
+                  <Text style={{ fontSize: 18, fontWeight: '500', marginBottom: 5 }}>{profile.fullName}</Text>
+                  <Text style={{ fontSize: 12, color: 'gray' }}>{profile.phone}</Text>
+                  <Text style={{ fontSize: 12, color: 'gray' }}>{profile.email}</Text>
                 </View>
-            </View>
+              </View>
 
               <View style={{ ...styles.menu, alignItems: 'flex-start' }}>
               <TouchableHighlight underlayColor="#DDDDDD" onPress={() => console.log('Мой авто pressed')} style={styles.button}>
