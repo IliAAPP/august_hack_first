@@ -1,9 +1,49 @@
-import { View, Text, Button, Image, TouchableHighlight, StyleSheet } from 'react-native';
-import React from 'react';
+import React, { useEffect, useState, useContext } from 'react';
+import { View, Text, Image, StyleSheet, TouchableHighlight } from 'react-native';
+import { doc, onSnapshot } from '@firebase/firestore';
+import { AuthContext } from '../../../providers/AuthProvider'; 
 import Layout from '../../layout/Layout';
 import Footer from '../Footer';
+import { auth, db, login, logout, register } from '../../../utils/firebase'
+
+interface UserData {
+  fullName: string;
+  phone: string;
+  email: string;
+  imageUrl?: string; 
+}
+
+interface UserData {
+  fullName: string;
+  phone: string;
+  email: string;
+  imageUrl?: string; 
+}
+
 
 const ProfileScreen = () => {
+  const { user } = useContext(AuthContext);
+  const [profileData, setProfileData] = useState<UserData>({
+    fullName: '',
+    phone: '',
+    email: '',
+    imageUrl: '../../../../assets/profile_man_user.jpg' // Путь к изображению по умолчанию
+  });
+
+  useEffect(() => {
+    if (user && user.uid) { // Используем user.uid вместо user._id
+      const unsubscribe = onSnapshot(doc(db, 'users', user.uid), (documentSnapshot) => {
+        const userData = documentSnapshot.data() as UserData; // Приведение типа к UserData
+        if (userData) {
+          setProfileData(userData); // Обновление состояния данными пользователя
+        }
+      });
+  
+      return () => unsubscribe(); // Отписка от слушателя при размонтировании компонента
+    }
+  }, [user]);
+
+
   return (
     <View>
       <View style={{backgroundColor: '#F8F8FF', width: '100%', height: '100%', }}>
@@ -15,13 +55,13 @@ const ProfileScreen = () => {
 
             <View style={{backgroundColor: 'white', width: '90%', marginLeft: 20, borderRadius: 30, padding: 15, paddingHorizontal: 20}}>
               <View style={{ alignItems: 'flex-start', marginLeft: 20, flexDirection: 'row', marginTop: 20, marginBottom:20 }}>
-                <Image source={require('../../../../assets/profile_man_user.jpg')} style={{ width: 70, height: 70, borderRadius: 40 }}  />
+                <Image source={{ uri: profileData.imageUrl }} style={{ width: 70, height: 70, borderRadius: 40 }}  />
                 <View style={{ flexDirection: 'column', marginLeft: 20, justifyContent: 'center' }}>
-                  <Text style={{ fontSize: 18, fontWeight: '500', marginBottom: 5 }}>Иван Иванов</Text>
-                  <Text style={{ fontSize: 12, color: 'gray' }}>+7 999-999-99-99</Text>
-                  <Text style={{ fontSize: 12, color: 'gray' }}>ivan@ivanmail.ru</Text>
+                  <Text style={{ fontSize: 18, fontWeight: '500', marginBottom: 5 }}>{profileData.fullName}</Text>
+                  <Text style={{ fontSize: 12, color: 'gray' }}>{profileData.phone}</Text>
+                  <Text style={{ fontSize: 12, color: 'gray' }}>{profileData.email}</Text>
                 </View>
-              </View>
+            </View>
 
               <View style={{ ...styles.menu, alignItems: 'flex-start' }}>
               <TouchableHighlight underlayColor="#DDDDDD" onPress={() => console.log('Мой авто pressed')} style={styles.button}>

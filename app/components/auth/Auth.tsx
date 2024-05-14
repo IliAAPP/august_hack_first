@@ -1,5 +1,5 @@
 import { View, Text, Pressable } from 'react-native';
-import React, { useState } from 'react';
+import React, { useState } from 'react'
 import tw from 'twrnc';
 import { useAuth } from '../../hooks/useAuth';
 import Loader from '../ui/Loader'

@@ -13,8 +13,6 @@ import ServicesScreen from "../components/screens/services/ServicesScreen";
 import AdressScreen from "../components/screens/services/adress/AdressScreen";
 import tw from "twrnc";
 
-
-
 const Stack = createNativeStackNavigator();
 
 const Navigation: FC = () => {
@@ -22,21 +20,21 @@ const Navigation: FC = () => {
 
     return (
         <NavigationContainer>
-            <Stack.Navigator screenOptions={{ headerShown: false }} >
-                <>
-                    <Stack.Screen name="Map" component={Map}  />
-                    <Stack.Screen name="ChatScreen" component={ChatScreen} />
-                    <Stack.Screen name="ServicesScreen" component={ServicesScreen}  />
-                    <Stack.Screen name="ProfileScreen" component={ProfileScreen} />
-                    <Stack.Screen name="FilterScreen" component={FilterScreen} />
-                    <Stack.Screen name="AdressScreen" component={AdressScreen}/>
+            <Stack.Navigator screenOptions={{ headerShown: false }}>
                 {user ? (
-          <>
-            <Stack.Screen name="Map" component={Map} />
-          </>
-        ) : (
-          <Stack.Screen name="Auth" component={Auth} />
-        )}</>
+                    <>
+
+                        <Stack.Screen name="Map" component={Map} />
+                        <Stack.Screen name="Home" component={Home} />
+                        <Stack.Screen name="ChatScreen" component={ChatScreen} />
+                        <Stack.Screen name="ServicesScreen" component={ServicesScreen} />
+                        <Stack.Screen name="ProfileScreen" component={ProfileScreen} />
+                        <Stack.Screen name="FilterScreen" component={FilterScreen} />
+                        <Stack.Screen name="AdressScreen" component={AdressScreen} />
+                    </>
+                ) : (
+                    <Stack.Screen name="Auth" component={Auth} />
+                )}
             </Stack.Navigator>
         </NavigationContainer>
     );

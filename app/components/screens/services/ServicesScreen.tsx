@@ -1,25 +1,51 @@
-import React from "react";
-import { View, Text, TouchableOpacity, Image } from "react-native";
+import { View, Text, TouchableOpacity, Modal, Image } from "react-native";
 import tw from "twrnc";
 import Footer from "../Footer";
-import AdressScreen from './adress/AdressScreen'
+import AdressScreen from "./adress/AdressScreen";
 import { useFonts } from "expo-font";
 import { FontAwesome } from "@expo/vector-icons";
 import { Feather } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Ionicons } from "@expo/vector-icons";
+import { Calendar, DateObject } from "react-native-calendars";
+import React, { useState } from "react";
 
 const ServicesScreen = () => {
     const [fontsLoaded] = useFonts({
         "SFProDisplay-Regular": require("../../../../assets/fonts/SF-Pro-Display-Regular.otf"),
     });
-
+    const [selectedDates, setSelectedDates] = useState({});
+    const [showCalendarModal, setShowCalendarModal] = useState(false);
     if (!fontsLoaded) {
         return <View />; // Или отобразите экран загрузки
     }
     const navigation = useNavigation();
+    const handleDateSelect = (date) => {
+        const formattedDate = date.dateString;
+        const newSelectedDates = { ...selectedDates };
 
+        if (newSelectedDates[formattedDate]) {
+            delete newSelectedDates[formattedDate];
+        } else {
+            newSelectedDates[formattedDate] = { selected: true, color: "blue" };
+        }
+
+        setSelectedDates(newSelectedDates);
+    };
+
+    const formatSelectedDates = () => {
+        const formattedDates = Object.keys(selectedDates).map((date) => {
+            const formattedDate = new Date(date);
+            const month = formattedDate.toLocaleString("default", {
+                month: "long",
+            });
+            const year = formattedDate.getFullYear();
+            return `${month} - ${year}`;
+        });
+
+        return formattedDates.join(", ");
+    };
     return (
         <>
             <View style={[tw`flex-1 justify-center items-center bg-white `]}>
@@ -38,7 +64,7 @@ const ServicesScreen = () => {
                     <View
                         style={tw`flex-col bg-white pb-4 rounded-[36px] mb-4 shadow-lg`}
                     >
-                        <View>
+                        <View style={tw`mb-4`}>
                             <Text
                                 style={tw`text-lg font-bold pt-3 text-center text-[#101D8E]`}
                             >
@@ -52,7 +78,13 @@ const ServicesScreen = () => {
                                     size={18}
                                     color="black"
                                 />
-                                <Text style={tw`text-center`}>май 2024</Text>
+                                <TouchableOpacity
+                                    onPress={() => setShowCalendarModal(true)}
+                                >
+                                    <Text style={tw`text-center`}>
+                                        {formatSelectedDates() || "май 2024"}
+                                    </Text>
+                                </TouchableOpacity>
                                 <FontAwesome
                                     name="long-arrow-right"
                                     size={18}
@@ -60,59 +92,77 @@ const ServicesScreen = () => {
                                 />
                             </View>
                         </View>
-                        <View style={tw`flex justify-start mt-4 `}>
-                            <View>
-                                <MaterialIcons
-                                    name="electrical-services"
-                                    size={24}
-                                    color="black"
-                                />
-                                <Text style={tw`ml-10 `}>
-                                    Потреблено, кВт*ч
-                                </Text>
-                                <Text style={tw`pt-1 pb-2 ml-10  font-bold`}>
-                                    20,09 кВт*ч
-                                </Text>
+                        <View style={tw` `}>
+                            <View style={tw`flex flex-row`}>
+                                <View style={tw`ml-2`}>
+                                    <MaterialIcons
+                                        name="electrical-services"
+                                        size={24}
+                                        color="black"
+                                    />
+                                </View>
+                                <View>
+                                    <Text style={tw`ml-2`}>
+                                        Потреблено, кВт*ч
+                                    </Text>
+                                    <Text style={tw`pt-1 pb-2 ml-6  font-bold`}>
+                                        20,09 кВт*ч
+                                    </Text>
+                                </View>
                             </View>
-                            <View style={tw`border-t-[1px] border-slate-200`}>
-                                <Ionicons
-                                    name="wallet-outline"
-                                    size={24}
-                                    color="black"
-                                />
-                                <Text style={tw`ml-10 pt-2`}>Потрачено, ₽</Text>
-                                <Text style={tw`pt-1 pb-2 ml-10 font-bold`}>
-                                    356,09 ₽
-                                </Text>
+                            <View
+                                style={tw`border-t-[1px] border-slate-200 flex flex-row`}
+                            >
+                                <View style={tw`ml-2 pt-3`}>
+                                    <Ionicons
+                                        name="wallet-outline"
+                                        size={24}
+                                        color="black"
+                                    />
+                                </View>
+                                <View>
+                                    <Text style={tw`ml-2 pt-2`}>
+                                        Потрачено, ₽
+                                    </Text>
+                                    <Text style={tw`pt-1 pb-2 ml-6 font-bold`}>
+                                        356,09 ₽
+                                    </Text>
+                                </View>
                             </View>
                             <TouchableOpacity
                                 style={tw`border-t-[1px] border-slate-200`}
                                 onPress={() =>
-                                    navigation.navigate('AdressScreen')
+                                    navigation.navigate("AdressScreen")
                                 }
                             >
                                 <View style={tw``}>
-                                    <FontAwesome
-                                        name="map-o"
-                                        size={24}
-                                        color="black"
-                                    />
-                                    <Text style={tw`ml-10 pt-2  `}>
-                                        Места зарядки
-                                    </Text>
-                                    <View
-                                        style={tw`flex justify-between flex-row pr-5`}
-                                    >
-                                        <Text
-                                            style={tw`pt-1 pb-2 ml-10 font-bold`}
-                                        >
-                                            Адреса
-                                        </Text>
-                                        <FontAwesome
-                                            name="long-arrow-right"
-                                            size={18}
-                                            color="black"
-                                        />
+                                    <View style={tw`relative `}>
+                                        <View style={tw`absolute mt-3 ml-2`}>
+                                            <FontAwesome
+                                                name="map-o"
+                                                size={24}
+                                                color="black"
+                                            />
+                                        </View>
+                                        <View style={tw`flex-none`}>
+                                            <Text style={tw`ml-10 pt-2  `}>
+                                                Места зарядки
+                                            </Text>
+                                            <View
+                                                style={tw`flex justify-between flex-row pr-5`}
+                                            >
+                                                <Text
+                                                    style={tw`pt-1 pb-2 ml-14 font-bold`}
+                                                >
+                                                    Адреса
+                                                </Text>
+                                                <FontAwesome
+                                                    name="long-arrow-right"
+                                                    size={18}
+                                                    color="black"
+                                                />
+                                            </View>
+                                        </View>
                                     </View>
 
                                     <View
@@ -157,9 +207,32 @@ const ServicesScreen = () => {
                             </Text>
                         </TouchableOpacity>
                     </View>
-
                 </View>
             </View>
+            <Modal
+                visible={showCalendarModal}
+                transparent={true}
+                animationType="slide"
+                onRequestClose={() => setShowCalendarModal(false)}
+            >
+                <View
+                    style={tw`flex-1 justify-center items-center bg-black bg-opacity-50`}
+                >
+                    <View style={tw`bg-white rounded-lg p-4`}>
+                        <Calendar
+                            onDayPress={handleDateSelect}
+                            markedDates={selectedDates}
+                            markingType={"multi-period"}
+                        />
+                        <TouchableOpacity
+                            style={tw`mt-4 py-2 px-4 bg-blue-500 rounded`}
+                            onPress={() => setShowCalendarModal(false)}
+                        >
+                            <Text style={tw`text-white font-bold`}>Готово</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
             <Footer />
         </>
     );

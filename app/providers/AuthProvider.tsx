@@ -29,7 +29,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     setIsLoading(true);
     try {
       const { user } = await register(userData.email, userData.password);
-      // Добавление phone и fullName в базу данных
       await addDoc(collection(db, 'users'), {
         _id: user.uid,
         email: userData.email,
