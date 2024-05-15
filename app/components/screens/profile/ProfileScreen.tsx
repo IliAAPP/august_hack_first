@@ -1,11 +1,14 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { View, Text, Image, StyleSheet, TouchableHighlight, ActivityIndicator } from 'react-native';
+import { View, Text, Image, StyleSheet, TouchableHighlight, ActivityIndicator, Linking } from 'react-native';
 import { doc, onSnapshot } from '@firebase/firestore';
 import { AuthContext } from '../../../providers/AuthProvider'; 
 import Layout from '../../layout/Layout';
 import Footer from '../Footer';
+import Confidentiality from '../confidentiality/Confidentiality';
 import { auth, db, login, logout, register } from '../../../utils/firebase'
 import { useProfile } from './useProfile';
+import { useNavigation } from '@react-navigation/native';
+
 
 interface UserData {
   fullName: string;
@@ -21,9 +24,12 @@ const ProfileScreen = () => {
   if (isLoading) {
     return <ActivityIndicator />;
   }
+  const navigation = useNavigation();
+  
 
 
   return (
+    
     <View>
       <View style={{backgroundColor: '#F8F8FF', width: '100%', height: '100%', }}>
         <Layout >
@@ -62,7 +68,7 @@ const ProfileScreen = () => {
                   <View style={{ marginTop: 10, borderTopWidth: 1, borderTopColor: 'gray' }}></View>
                 </>
               </TouchableHighlight>
-              <TouchableHighlight underlayColor="#DDDDDD" onPress={() => console.log('Конфиденциальность pressed')} style={styles.button}>
+              <TouchableHighlight underlayColor="#DDDDDD" onPress={() => navigation.navigate('Confidentiality')} style={styles.button}>
                 <>
                   <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                     <Image source={require('../../../../assets/konf.png')} style={{ width: 20, height: 20, marginRight: 10 }} />
@@ -71,7 +77,7 @@ const ProfileScreen = () => {
                   <View style={{ marginTop: 10, borderTopWidth: 1, borderTopColor: 'gray' }}></View>
                 </>
               </TouchableHighlight>
-              <TouchableHighlight underlayColor="#DDDDDD" onPress={() => console.log('Чат поддержки pressed')} style={styles.button}>
+              <TouchableHighlight underlayColor="white" onPress={() => Linking.openURL('tg://resolve?domain=iliaappolonov')} style={styles.button}>
                 <>
                   <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                     <Image source={require('../../../../assets/chat.png')} style={{ width: 20, height: 20, marginRight: 10 }} />

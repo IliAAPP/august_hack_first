@@ -11,6 +11,7 @@ import ProfileScreen from "../components/screens/profile/ProfileScreen";
 import ChatScreen from "../components/screens/chat/ChatScreen";
 import ServicesScreen from "../components/screens/services/ServicesScreen";
 import AdressScreen from "../components/screens/services/adress/AdressScreen";
+import Confidentiality from "../components/screens/confidentiality/Confidentiality";
 import tw from "twrnc";
 
 const Stack = createNativeStackNavigator();
@@ -31,6 +32,7 @@ const Navigation: FC = () => {
                         <Stack.Screen name="ProfileScreen" component={ProfileScreen} />
                         <Stack.Screen name="FilterScreen" component={FilterScreen} />
                         <Stack.Screen name="AdressScreen" component={AdressScreen} />
+                        <Stack.Screen name="Confidentiality" component={Confidentiality} />
                     </>
                 ) : (
                     <Stack.Screen name="Auth" component={Auth} />
