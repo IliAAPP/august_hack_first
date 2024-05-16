@@ -1,72 +1,128 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableHighlight } from 'react-native';
+import { useProfile } from '../../../components/screens/profile/useProfile';
 import Layout from '../../layout/Layout';
 import Footer from '../Footer';
 
 const Confidentiality = () => {
-    const [showChangeName, setShowChangeName] = useState(false); // Состояние для отображения/скрытия плашки изменения имени
-    const [newName, setNewName] = useState(''); // Состояние для хранения нового имени пользователя
+    const { profile, setName, updateFullName, updatePhoneNumber, email, setEmail, updateEmail } = useProfile();
+    const [showChangeName, setShowChangeName] = useState(false);
+    const [showChangePhone, setShowChangePhone] = useState(false);
+    const [showChangeEmail, setShowChangeEmail] = useState(false);
+    const [newName, setNewName] = useState(profile.fullName || '');
+    const [newPhone, setNewPhone] = useState(profile.phone || '');
+    const [newEmail, setNewEmail] = useState(profile.email || '');
 
     const handleNameChange = () => {
-        setShowChangeName(!showChangeName); // Переключение состояния при нажатии на "Изменить имя"
+        setShowChangeName(!showChangeName);
     };
 
-    const handleChangeName = () => {
-        // Обработка изменения имени пользователя
-        // Здесь вы можете добавить логику сохранения нового имени в базу данных или хранилище
-        console.log('New name:', newName);
-        setShowChangeName(false); // Скрыть плашку после сохранения
-        setNewName(''); // Очистить состояние нового имени
+    const handlePhoneChange = () => {
+        setShowChangePhone(!showChangePhone);
+    };
+
+    const handleEmailChange = () => {
+        setShowChangeEmail(!showChangeEmail);
+    };
+
+    const handleChangeName = async () => {
+        await updateFullName(newName);
+        setShowChangeName(false);
+        setNewName('');
+    };
+
+    const handleChangePhone = async () => {
+        await updatePhoneNumber(newPhone);
+        setShowChangePhone(false);
+        setNewPhone('');
+    };
+
+    const handleChangeEmail = async () => {
+        await updateEmail(newEmail);
+        setShowChangeEmail(false);
+        setNewEmail('');
     };
 
     return (
         <View style={{ flex: 1 }}>
             <View style={{ backgroundColor: '#F8F8FF', flex: 1 }}>
                 <Layout>
-                    <View style={{ flex: 1, justifyContent: 'space-between' }}>
-                        <View>
-                            <Text style={styles.title}>Конфиденциальность</Text>
-                        </View>
+                    <View style={{ flex: 1 }}>
+                        <View style={{ justifyContent: 'space-between' }}>
+                            <View>
+                                <Text style={styles.title}>Конфиденциальность</Text>
+                            </View>
 
-                        <View style={styles.content}>
-                            <TouchableHighlight underlayColor="transparent" onPress={handleNameChange}>
-                                <View style={styles.item}>
-                                    <Text style={styles.itemText}>Изменить имя</Text>
-                                </View>
-                            </TouchableHighlight>
+                            <View style={styles.content}>
+                                <TouchableHighlight underlayColor="transparent" onPress={handleNameChange}>
+                                    <View style={styles.item}>
+                                        <Text style={styles.itemText}>Изменить имя</Text>
+                                    </View>
+                                </TouchableHighlight>
 
-                            {showChangeName && (
-                                <View style={styles.changeNameContainer}>
-                                    <TextInput
-                                        style={styles.input}
-                                        value={newName}
-                                        onChangeText={text => setNewName(text)}
-                                        placeholder="Введите новое имя"
-                                    />
-                                    <TouchableHighlight underlayColor="#DDDDDD" onPress={handleChangeName} style={styles.changeButton}>
-                                        <Text style={styles.changeButtonText}>Сохранить</Text>
-                                    </TouchableHighlight>
-                                </View>
-                            )}
+                                {showChangeName && (
+                                    <View style={styles.changeNameContainer}>
+                                        <TextInput
+                                            style={styles.input}
+                                            value={newName}
+                                            onChangeText={text => setNewName(text)}
+                                            placeholder="Введите новое имя"
+                                        />
+                                        <TouchableHighlight underlayColor="#DDDDDD" onPress={handleChangeName} style={styles.changeButton}>
+                                            <Text style={styles.changeButtonText}>Сохранить</Text>
+                                        </TouchableHighlight>
+                                    </View>
+                                )}
 
-<View>
-                                    <Text style={{fontSize: 18, marginTop: 20, fontWeight: '500'}}>Изменить номер телефона</Text>
-                                    <View style={{ marginTop: 20, borderTopWidth: 1, borderTopColor: 'gray', width: '100%' }}></View>
-                                </View>
+                                <TouchableHighlight underlayColor="transparent" onPress={handlePhoneChange}>
+                                    <View style={styles.item}>
+                                        <Text style={styles.itemText}>Изменить номер телефона</Text>
+                                    </View>
+                                </TouchableHighlight>
 
-                                <View>
-                                    <Text style={{fontSize: 18, marginTop: 20, fontWeight: '500'}}>Изменить почту</Text>
-                                    <View style={{ marginTop: 20, borderTopWidth: 1, borderTopColor: 'gray', width: '100%' }}></View>
-                                </View>
+                                {showChangePhone && (
+                                    <View style={styles.changeNameContainer}>
+                                        <TextInput
+                                            style={styles.input}
+                                            value={newPhone}
+                                            onChangeText={text => setNewPhone(text)}
+                                            placeholder="Введите новый номер телефона"
+                                        />
+                                        <TouchableHighlight underlayColor="#DDDDDD" onPress={handleChangePhone} style={styles.changeButton}>
+                                            <Text style={styles.changeButtonText}>Сохранить</Text>
+                                        </TouchableHighlight>
+                                    </View>
+                                )}
+
+                                <TouchableHighlight underlayColor="transparent" onPress={handleEmailChange}>
+                                    <View style={styles.item}>
+                                        <Text style={styles.itemText}>Изменить email</Text>
+                                    </View>
+                                </TouchableHighlight>
+
+                                {showChangeEmail && (
+                                    <View style={styles.changeNameContainer}>
+                                        <TextInput
+                                            style={styles.input}
+                                            value={newEmail}
+                                            onChangeText={text => setNewEmail(text)}
+                                            placeholder="Введите новый email"
+                                        />
+                                        <TouchableHighlight underlayColor="#DDDDDD" onPress={handleChangeEmail} style={styles.changeButton}>
+                                            <Text style={styles.changeButtonText}>Сохранить</Text>
+                                        </TouchableHighlight>
+                                    </View>
+                                )}
 
                                 <View>
                                     <Text style={{fontSize: 18, marginTop: 20, fontWeight: '500'}}>Привязанные карты</Text>
                                     <View style={{ marginTop: 20, borderTopWidth: 1, borderTopColor: 'gray', width: '100%' }}></View>
                                 </View>
-                                
+
                                 <View>
                                     <Text style={{fontSize: 16, marginTop: 150, marginBottom:60, textAlign: 'center', textDecorationLine: 'underline'}}>Политика конфеденциальности</Text>
                                 </View>
+                            </View>
                         </View>
                     </View>
                 </Layout>

@@ -1,4 +1,4 @@
-import { View, Text, Pressable } from 'react-native';
+import { View, Text, Pressable, TouchableHighlight } from 'react-native';
 import React, { useState } from 'react'
 import tw from 'twrnc';
 import { useAuth } from '../../hooks/useAuth';
@@ -64,9 +64,18 @@ const Auth = () => {
 
         <Field val={data.password} placeholder='Введите пароль' 
         onChange={val => setData({...data, password: val})}
-        isSecure={true}/>
+        isSecure={true}/> 
 
-        <Button title='Lets go!' onPress={authHandler}/>
+      <TouchableHighlight
+        underlayColor="#100D94" // Цвет подсветки при нажатии
+        onPress={authHandler}
+        style={tw`bg-[#100D94] p-3 rounded-lg mt-5`} // Стили для кнопки
+      >
+        <Text style={tw`text-white text-center font-bold`}>
+          Lets go!
+        </Text>
+      </TouchableHighlight>
+
 
         <Pressable onPress={() => setIsReg(!isReg)}>
           <Text style={tw`text-gray-800 opacity-30 text-right text-sm`}>

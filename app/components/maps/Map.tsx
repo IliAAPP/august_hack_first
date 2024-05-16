@@ -8,13 +8,16 @@ import {
     TextInput,
     FlatList,
     Keyboard,
+    Platform
 } from "react-native";
 import MapView, { Callout, Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import { useNavigation } from "@react-navigation/native";
 import * as Location from "expo-location";
 import { markers } from "./markers";
 import Footer from "../screens/Footer";
-import { MaterialIcons } from "@expo/vector-icons";
+import haversine from "haversine-distance";
+import { FontAwesome5 } from "@expo/vector-icons";
+
 type MarkerType = {
     latitude: number;
     longitude: number;
@@ -36,7 +39,7 @@ export default function Map() {
     const [searchText, setSearchText] = useState("");
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [hasLocationPermission, setHasLocationPermission] = useState(false);
-    const [userLocation, setUserLocation] = useState(null); // Добавлено для хранения местоположения пользователя
+    const [userLocation, setUserLocation] = useState(null);
 
     useEffect(() => {
         (async () => {
@@ -53,13 +56,14 @@ export default function Map() {
                 longitude: location.coords.longitude,
                 latitudeDelta: 0.01,
                 longitudeDelta: 0.01,
-            }); // Установка текущего местоположения пользователя
+            });
         })();
     }, []);
 
     const filteredMarkers = markers.filter((marker) =>
         marker.name.toLowerCase().includes(searchText.toLowerCase())
     );
+
     const zoomIn = () => {
         const currentRegion = mapRef.current?.getCamera();
         currentRegion.then((camera) => {
@@ -75,6 +79,7 @@ export default function Map() {
             mapRef.current?.animateCamera(camera, { duration: 500 });
         });
     };
+
     useEffect(() => {
         navigation.setOptions({
             headerRight: () => (
@@ -130,6 +135,37 @@ export default function Map() {
         );
     };
 
+    const calculateDistance = (marker: MarkerType) => {
+        if (!userLocation) return null;
+        const userCoords = {
+            latitude: userLocation.latitude,
+            longitude: userLocation.longitude,
+        };
+        const markerCoords = {
+            latitude: marker.latitude,
+            longitude: marker.longitude,
+        };
+        const distance = haversine(userCoords, markerCoords) / 1000; // Convert to kilometers
+        return distance;
+    };
+
+    const getDistanceText = (distance) => {
+        if (distance < 1) {
+            return `${Math.round(distance * 1000)} \n м`;
+        }
+        return `${distance.toFixed(1)} \n км`;
+    };
+
+    const getMarkerColor = (distance) => {
+        if (distance <= 2) {
+            return "green";
+        } else if (distance <= 3) {
+            return "yellow";
+        } else {
+            return "brown";
+        }
+    };
+
     const renderSuggestionItem = ({ item }) => (
         <TouchableOpacity
             style={styles.suggestionItem}
@@ -177,28 +213,38 @@ export default function Map() {
                 initialRegion={INITIAL_REGION}
                 showsUserLocation={hasLocationPermission}
                 showsMyLocationButton={false}
-                provider={PROVIDER_GOOGLE}
+                provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : undefined}
                 ref={mapRef}
+                onPress={() => {
+                    setShowSuggestions(false);
+                    setSearchText("");
+                    Keyboard.dismiss(); 
+                }}
             >
-                {filteredMarkers.map((marker, index) => (
-                    <Marker
-                        key={index}
-                        title={marker.name}
-                        coordinate={marker}
-                        onPress={() => onMarkerSelected(marker)}
-                    >
-                        <MaterialIcons
-                            name="electric-car"
-                            size={34}
-                            color="black"
-                        />
-                        <Callout onPress={calloutPressed}>
-                            <View style={{ padding: 0 }}>
-                                <Text style={{ fontSize: 6 }}>Hello</Text>
+                {filteredMarkers.map((marker, index) => {
+                    const distance = calculateDistance(marker);
+                    const distanceText = getDistanceText(distance);
+                    const markerColor = getMarkerColor(distance);
+                    return (
+                        <Marker
+                            key={index}
+                            title={marker.name}
+                            coordinate={marker}
+                            onPress={() => onMarkerSelected(marker)}
+                        >
+                            <View
+                                style={[
+                                    styles.marker,
+                                    { backgroundColor: markerColor },
+                                ]}
+                            >
+                                <Text style={styles.markerText}>
+                                    {distanceText}
+                                </Text>
                             </View>
-                        </Callout>
-                    </Marker>
-                ))}
+                        </Marker>
+                    );
+                })}
             </MapView>
             <View style={styles.rightCenterButtons}>
                 <TouchableOpacity onPress={zoomIn} style={styles.zoomButton}>
@@ -211,7 +257,13 @@ export default function Map() {
                     onPress={showUserLocation}
                     style={styles.locationButton}
                 >
-                    <Text style={styles.locationButtonText}>📍</Text>
+                    <Text style={styles.locationButtonText}>
+                        <FontAwesome5
+                            name="location-arrow"
+                            size={22}
+                            color="white"
+                        />
+                    </Text>
                 </TouchableOpacity>
             </View>
             <Footer />
@@ -281,5 +333,18 @@ const styles = StyleSheet.create({
     zoomText: {
         fontSize: 27,
         color: "white",
+    },
+    marker: {
+        backgroundColor: "white",
+        borderRadius: 100,
+        padding: 0,
+        minWidth: 40,
+        minHeight: 40,
+        alignItems: "center",
+        justifyContent: "center",
+    },
+    markerText: {
+        color: "black",
+        fontWeight: "bold",
     },
 });

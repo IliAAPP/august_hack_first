@@ -8,10 +8,14 @@ import { Feather } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Ionicons } from "@expo/vector-icons";
-import { Calendar, DateObject } from "react-native-calendars";
-import React, { useState } from "react";
+import { Calendar } from "react-native-calendars";
+import React, { useState, FC } from "react";
 
-const ServicesScreen = () => {
+interface ISelectedDates {
+    [key: string]: { selected: boolean; color: string };
+  }
+
+const ServicesScreen: FC = () => {
     const [fontsLoaded] = useFonts({
         "SFProDisplay-Regular": require("../../../../assets/fonts/SF-Pro-Display-Regular.otf"),
     });
@@ -21,9 +25,9 @@ const ServicesScreen = () => {
         return <View />; // Или отобразите экран загрузки
     }
     const navigation = useNavigation();
-    const handleDateSelect = (date) => {
+    const handleDateSelect = (date: { dateString: string }) => {
         const formattedDate = date.dateString;
-        const newSelectedDates = { ...selectedDates };
+        const newSelectedDates: ISelectedDates = { ...selectedDates };
 
         if (newSelectedDates[formattedDate]) {
             delete newSelectedDates[formattedDate];
