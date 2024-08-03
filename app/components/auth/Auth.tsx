@@ -13,7 +13,6 @@ interface IData {
   fullName: string; 
 }
 
-
 const Auth = () => {
   const {isLoading, login, register} = useAuth()
   
@@ -67,27 +66,24 @@ const Auth = () => {
         isSecure={true}/> 
 
       <TouchableHighlight
-        underlayColor="#100D94" // Цвет подсветки при нажатии
+        underlayColor="#59A9CC" // Цвет подсветки при нажатии
         onPress={authHandler}
-        style={tw`bg-[#100D94] p-3 rounded-lg mt-5`} // Стили для кнопки
+        style={tw`bg-[#59A9CC] p-3 rounded-lg mt-5`} // Стили для кнопки
       >
         <Text style={tw`text-white text-center font-bold`}>
           Lets go!
         </Text>
       </TouchableHighlight>
 
-
         <Pressable onPress={() => setIsReg(!isReg)}>
           <Text style={tw`text-gray-800 opacity-30 text-right text-sm`}>
             {isReg? 'Login' : 'Register'}
           </Text>
-
         </Pressable>
 
         </View>
       </View>
     </View>
-
   );
 }
 

@@ -23,10 +23,10 @@ const LoadScreen = () => {
 
     return (
         <LinearGradient
-            colors={["#000000", "#0000FF", "#808080"]}
+            colors={["#59A9CC", "#59A9CC"]}
             style={styles.container}
         >
-            <Text style={styles.logo}>E</Text>
+            <Text style={styles.logo}>επιφάνεια</Text>
             <View style={styles.loadingBar}>
                 <Animated.View
                     style={[
@@ -55,9 +55,10 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
     logo: {
-        fontSize: 200,
+        fontSize: 50, // Уменьшение размера текста
         color: "#FFFFFF",
         fontWeight: "bold",
+        textAlign: "center", // Размещение текста по центру
         marginBottom: 20,
     },
     loadingBar: {

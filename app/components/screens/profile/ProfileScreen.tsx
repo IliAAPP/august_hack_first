@@ -1,148 +1,244 @@
-import React, { useEffect, useState, useContext } from 'react';
-import { View, Text, Image, StyleSheet, TouchableHighlight, ActivityIndicator, Linking } from 'react-native';
-import { doc, onSnapshot } from '@firebase/firestore';
-import { AuthContext } from '../../../providers/AuthProvider'; 
-import Layout from '../../layout/Layout';
-import Footer from '../Footer';
-import Confidentiality from '../confidentiality/Confidentiality';
-import { auth, db, login, logout, register } from '../../../utils/firebase'
-import { useProfile } from './useProfile';
-import { useNavigation } from '@react-navigation/native';
+import React from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
 
-
-interface UserData {
-  fullName: string;
-  phone: string;
-  email: string;
-  imageUrl?: string; 
-}
-
-const ProfileScreen = () => {
-  const { profile, isLoading } = useProfile(); // Используем хук useProfile для получения данных профиля
-
-  // Если данные профиля загружаются, отобразим индикатор загрузки
-  if (isLoading) {
-    return <ActivityIndicator />;
-  }
-  const navigation = useNavigation();
-  
-
-
+const UserProfile = () => {
   return (
-    
-    <View>
-      <View style={{backgroundColor: '#F8F8FF', width: '100%', height: '100%', }}>
-        <Layout >
-          <View style={{ flex: 1, justifyContent: 'space-between'}}>
-            <View>
-              <Text style={{ fontSize: 30, textAlign: 'center', marginVertical: 10, marginBottom: 30 }}>Профиль</Text>
-            </View>
-
-            <View style={{backgroundColor: 'white', width: '90%', marginLeft: 20, borderRadius: 30, padding: 15, paddingHorizontal: 20}}>
-              <View style={{ alignItems: 'flex-start', marginLeft: 20, flexDirection: 'row', marginTop: 20, marginBottom:20 }}>
-                <Image source={require('../../../../assets/profile_man_user.jpg')} style={{ width: 70, height: 70, borderRadius: 40 }}  />
-                <View style={{ flexDirection: 'column', marginLeft: 20, justifyContent: 'center' }}>
-                  <Text style={{ fontSize: 18, fontWeight: '500', marginBottom: 5 }}>{profile.fullName}</Text>
-                  <Text style={{ fontSize: 12, color: 'gray' }}>{profile.phone}</Text>
-                  <Text style={{ fontSize: 12, color: 'gray' }}>{profile.email}</Text>
-                </View>
-              </View>
-
-              <View style={{ ...styles.menu, alignItems: 'flex-start' }}>
-              <TouchableHighlight underlayColor="#DDDDDD" onPress={() => console.log('Мой авто pressed')} style={styles.button}>
-                <>
-                <View style={{ marginBottom: 10, borderTopWidth: 1, borderTopColor: 'gray' }}></View>
-                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <Image source={require('../../../../assets/my_car.png')} style={{ width: 20, height: 20, marginRight: 10 }} />
-                    <Text style={styles.buttonText}>Мой авто</Text>
-                  </View>
-                  <View style={{ marginTop: 10, borderTopWidth: 1, borderTopColor: 'gray' }}></View>
-                </>
-              </TouchableHighlight>
-              <TouchableHighlight underlayColor="#DDDDDD" onPress={() => console.log('Избранное pressed')} style={styles.button}>
-                <>
-                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <Image source={require('../../../../assets/favourite.jpg')} style={{ width: 20, height: 20, marginRight: 10 }} />
-                    <Text style={styles.buttonText}>Избранное</Text>
-                  </View>
-                  <View style={{ marginTop: 10, borderTopWidth: 1, borderTopColor: 'gray' }}></View>
-                </>
-              </TouchableHighlight>
-              <TouchableHighlight underlayColor="#DDDDDD" onPress={() => navigation.navigate('Confidentiality')} style={styles.button}>
-                <>
-                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <Image source={require('../../../../assets/konf.png')} style={{ width: 20, height: 20, marginRight: 10 }} />
-                    <Text style={styles.buttonText}>Конфиденциальность</Text>
-                  </View>
-                  <View style={{ marginTop: 10, borderTopWidth: 1, borderTopColor: 'gray' }}></View>
-                </>
-              </TouchableHighlight>
-              <TouchableHighlight underlayColor="white" onPress={() => Linking.openURL('tg://resolve?domain=iliaappolonov')} style={styles.button}>
-                <>
-                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <Image source={require('../../../../assets/chat.png')} style={{ width: 20, height: 20, marginRight: 10 }} />
-                    <Text style={styles.buttonText}>Чат поддержки</Text>
-                  </View>
-                  <View style={{ marginTop: 10, borderTopWidth: 1, borderTopColor: 'gray' }}></View>
-                </>
-              </TouchableHighlight>
-              <TouchableHighlight underlayColor="#DDDDDD" onPress={() => console.log('О приложении pressed')} style={styles.button}>
-                <>
-                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <Image source={require('../../../../assets/info.png')} style={{ width: 20, height: 20, marginRight: 10 }} />
-                    <Text style={styles.buttonText}>О приложении</Text>
-                  </View>
-                  <View style={{ marginTop: 10, borderTopWidth: 1, borderTopColor: 'gray' }}></View>
-                </>
-              </TouchableHighlight>
-            </View>
-
-            
-
-            <View style={{ alignItems: 'center', marginTop: 80, marginBottom: 30 }}>
-              <TouchableHighlight>
-                <Text style={{color:'gray', marginBottom: 5}}>Выйти</Text>
-              </TouchableHighlight>
-              <TouchableHighlight>
-                <Text style={{color:'#F08080'}}>Удалить аккаунт</Text>
-              </TouchableHighlight>
-            </View>
-
-          </View>
-          </View>
-
-        </Layout>
+    <ScrollView style={styles.container}>
+      <View style={styles.profileHeader}>
+        <Image source={require('../../../../assets/avatar_chat1.jpg')} style={styles.profileImage} />
+        <View>
+          <Text style={styles.userName}>Михаил Васильевич</Text>
+          <Text style={styles.userPhone}>+7 (918) 068 21-72</Text>
+        </View>
       </View>
 
-      
-      <Footer />
-    </View>
+      <View style={styles.levelContainer}>
+        <Text style={styles.levelText}>Уровень 13</Text>
+        <View style={styles.progressBar}>
+          <View style={styles.progress} />
+          <Text style={styles.progressText}>1700 / 2000</Text>
+        </View>
+      </View>
+
+      <View style={styles.cardTop}>
+        <Text style={styles.cardTitle}>Карта для получения выплат</Text>
+        <View style={styles.cardNumberContainer}>
+          <Text style={styles.cardNumber}>0000 0000 0000 0000</Text>
+        </View>
+      </View>
+      <View style={styles.cardBottom}>
+        <View>
+          <Text style={styles.balance}>13 000 ₽</Text>
+          <Text style={styles.frozenBalance}>и 3 000 ₽ в заморозке</Text>
+        </View>
+        <View style={styles.actionsContainer}>
+          <TouchableOpacity style={styles.actionButton}>
+            <Image source={require('../../../../assets/history.png')} style={styles.actionIcon} />
+            <Text style={styles.actionText}>История операций</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.actionButton}>
+            <Image source={require('../../../../assets/recharge.png')} style={styles.actionIcon} />
+            <Text style={styles.actionText}>Пополнить баланс</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.actionButton}>
+            <Image source={require('../../../../assets/edit.png')} style={styles.actionIcon} />
+            <Text style={styles.actionText}>Изменить карту</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      <View style={styles.menu}>
+        <TouchableOpacity style={styles.menuItem}>
+          <Text style={styles.menuText}>Экипировка</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.menuItem}>
+          <Text style={styles.menuText}>Договоры</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.menuItem}>
+          <Text style={styles.menuText}>Инструкции</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.menuItem}>
+          <Text style={styles.menuText}>Потратить баллы</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.menuItem}>
+          <Text style={styles.menuText}>О сервисе</Text>
+        </TouchableOpacity>
+      </View>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
-  buttonText: {
-    fontSize: 18,
+  cardContainer: {
+    borderRadius: 15,
+    overflow: 'hidden',
+    backgroundColor: '#59A9CC',
+    margin: 10,
+    padding: 20,
   },
-  menu: {
-    marginVertical: 20,
+  cardTop: {
+    backgroundColor: '#58A6C8',
+    padding: 20,
+    borderTopLeftRadius: 15,
+    borderTopRightRadius: 15,
   },
-  button: {
-    width: '100%',
-    backgroundColor: 'white',
-    padding: 10,
-    borderRadius: 5,
+  cardTitle: {
+    color: '#fff',
+    fontSize: 20,
+    marginBottom: 10,
+    fontWeight: '600',
+    paddingVertical: 10
   },
-  buttonContent: {
-    flexDirection: 'row',
+  cardNumberContainer: {
+    backgroundColor: '#fff',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 10,
     alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+  },
+  cardNumber: {
+    color: '#000',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  cardBottom: {
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderBottomLeftRadius: 15,
+    borderBottomRightRadius: 15,
+    backgroundColor: '#58A6C8',
+    marginBottom: 10
+  },
+  balance: {
+    color: '#fff',
+    fontSize: 36,
+    fontWeight: 'bold',
+    marginBottom: 5,
+  },
+  frozenBalance: {
+    color: '#fff',
+    fontSize: 16,
+    marginBottom: 20,
+  },
+  actionsContainer: {
+    flexDirection: 'row',
     justifyContent: 'space-between',
   },
-  line: {
-    height: 1,
-    backgroundColor: 'black',
+  actionButton: {
+    flex: 1,
+    alignItems: 'center',
+    padding: 10,
+    flexDirection: 'row',
+    justifyContent: 'center',
+  },
+  actionIcon: {
+    width: 20,
+    height: 20,
+    marginRight: 8,
+  },
+  actionText: {
+    color: '#fff',
+    fontSize: 14,
+  },
+  container: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: '#f9f9f9',
+  },
+  profileHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+    marginTop: 40,
+  },
+  profileImage: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    marginRight: 15,
+  },
+  userName: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  userPhone: {
+    fontSize: 14,
+    color: '#888',
+  },
+  levelContainer: {
+    marginBottom: 20,
+  },
+  levelText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 5,
+  },
+  progressBar: {
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#e0e0e0',
+    position: 'relative',
+    justifyContent: 'center',
+  },
+  progress: {
+    width: '85%',
+    height: '100%',
+    borderRadius: 5,
+    backgroundColor: '#59A9CC',
+  },
+  progressText: {
+    position: 'absolute',
+    right: 10,
+    fontSize: 12,
+    color: '#fff',
+  },
+  balanceContainer: {
+    padding: 15,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 5,
+    elevation: 3,
+  },
+  balanceText: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    marginBottom: 5,
+  },
+  frozenText: {
+    fontSize: 14,
+    color: '#888',
+    marginBottom: 10,
+  },
+  balanceActions: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  menu: {
+    padding: 15,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 5,
+    elevation: 3,
+  },
+  menuItem: {
+    paddingVertical: 15,
+    borderBottomColor: '#e0e0e0',
+    borderBottomWidth: 1,
+  },
+  menuText: {
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
 
-
-export default ProfileScreen;
+export default UserProfile;

@@ -1,136 +1,52 @@
-import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
-import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
-import {
-    Feather,
-    Ionicons,
-    FontAwesome,
-    MaterialIcons,
-    AntDesign,
-} from "@expo/vector-icons";
-
-// Определение типа для параметра screenName
-type ScreenName = "ChatScreen" | "ServicesScreen" | "Map" | "FilterScreen" | "ProfileScreen";
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { MaterialIcons } from '@expo/vector-icons';
 
 const Footer = () => {
-    const navigation = useNavigation();
-    const route = useRoute<RouteProp<Record<string, object>, string>>();
+  const [activeTab, setActiveTab] = useState('home');
 
-    const isActive = (screenName: ScreenName) => {
-        return route.name === screenName;
-    };
+  const tabs = [
+    { key: 'home', label: 'Главная', icon: 'home' },
+    { key: 'map', label: 'Карта', icon: 'map' },
+    { key: 'tasks', label: 'Задания', icon: 'assignment' },
+    { key: 'chats', label: 'Чаты', icon: 'chat' },
+    { key: 'profile', label: 'Профиль', icon: 'person' },
+  ];
 
-    // Функция для получения цвета в зависимости от активности экрана
-    const getIconColor = (screenName: ScreenName) => {
-        return isActive(screenName) ? "white" : "grey";
-    };
-
-    return (
-        <View style={styles.footer}>
-            <TouchableOpacity
-                style={styles.iconContainer}
-                onPress={() => navigation.navigate("ChatScreen")}
-            >
-                <Ionicons
-                    name="chatbubble-outline"
-                    size={24}
-                    color={getIconColor("ChatScreen")}
-                />
-                <Text
-                    style={{
-                        ...styles.iconText,
-                        color: getIconColor("ChatScreen"),
-                    }}
-                >
-                    Чат
-                </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-                style={styles.iconContainer}
-                onPress={() => navigation.navigate("ServicesScreen")}
-            >
-                <Feather
-                    name="info"
-                    size={24}
-                    color={getIconColor("ServicesScreen")}
-                />
-                <Text
-                    style={{
-                        ...styles.iconText,
-                        color: getIconColor("ServicesScreen"),
-                    }}
-                >
-                    Сервисы
-                </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-                style={styles.iconContainer}
-                onPress={() => navigation.navigate("Map")}
-            >
-                <Feather name="map-pin" size={24} color={getIconColor("Map")} />
-                <Text
-                    style={{ ...styles.iconText, color: getIconColor("Map") }}
-                >
-                    Карта
-                </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-                style={styles.iconContainer}
-                onPress={() => navigation.navigate("FilterScreen")}
-            >
-                <Ionicons
-                    name="filter"
-                    size={24}
-                    color={getIconColor("FilterScreen")}
-                />
-                <Text
-                    style={{
-                        ...styles.iconText,
-                        color: getIconColor("FilterScreen"),
-                    }}
-                >
-                    Фильтры
-                </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-                style={styles.iconContainer}
-                onPress={() => navigation.navigate("ProfileScreen")}
-            >
-                <AntDesign
-                    name="user"
-                    size={24}
-                    color={getIconColor("ProfileScreen")}
-                />
-                <Text
-                    style={{
-                        ...styles.iconText,
-                        color: getIconColor("ProfileScreen"),
-                    }}
-                >
-                    Профиль
-                </Text>
-            </TouchableOpacity>
-        </View>
-    );
+  return (
+    <View style={styles.footer}>
+      {tabs.map(tab => (
+        <TouchableOpacity
+          key={tab.key}
+          style={styles.tab}
+          onPress={() => setActiveTab(tab.key)}
+        >
+          <MaterialIcons
+            name={tab.icon}
+            size={24}
+            color={activeTab === tab.key ? '#59A9CC' : '#C4C4C4'}
+          />
+          <Text style={{ color: activeTab === tab.key ? '#59A9CC' : '#C4C4C4' }}>
+            {tab.label}
+          </Text>
+        </TouchableOpacity>
+      ))}
+    </View>
+  );
 };
 
 const styles = StyleSheet.create({
-    footer: {
-        marginTop: "auto",
-        flexDirection: "row",
-        justifyContent: "space-around",
-        alignItems: "center",
-        backgroundColor: "black",
-        height: 60,
-    },
-    iconContainer: {
-        marginLeft: 15,
-        alignItems: "center",
-        flexDirection: "column",
-    },
-    iconText: {
-        color: "#fff",
-    },
+  footer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    paddingVertical: 10,
+    borderTopWidth: 1,
+    borderTopColor: '#ddd',
+    backgroundColor: '#fff',
+  },
+  tab: {
+    alignItems: 'center',
+  },
 });
 
 export default Footer;

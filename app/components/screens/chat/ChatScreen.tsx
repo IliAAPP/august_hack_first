@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState } from "react";
 import {
     View,
     Text,
@@ -11,14 +11,17 @@ import {
 } from "react-native";
 import tw from "twrnc";
 import { Ionicons } from "@expo/vector-icons";
-import Footer from "../Footer";
+
+// Импортируйте локальные аватары
+const avatar1 = require('../../../../assets/avatar_chat1.jpg'); // Убедитесь, что путь к изображению корректен
+const avatar2 = require('../../../../assets/avatar_chat2.jpg'); // Убедитесь, что путь к изображению корректен
 
 interface Message {
     id: string;
     text: string;
     user: {
         name: string;
-        avatar: string;
+        avatar: any; // Локальные аватары с использованием `any`
     };
     isUserMessage?: boolean;
 }
@@ -26,26 +29,27 @@ interface Message {
 const initialMessages: Message[] = [
     {
         id: "1",
-        text: "Привет всем, как дела?",
+        text: "Добрый день, как вам удобно...",
         user: {
-            name: "Анна Иванова",
-            avatar: "https://via.placeholder.com/50",
+            name: "Вы",
+            avatar: avatar1,
         },
+        isUserMessage: true,
     },
     {
         id: "2",
-        text: "Всё отлично, спасибо!",
+        text: "В каком формате вы хотите получить ответ?",
         user: {
-            name: "Игорь Николаев",
-            avatar: "https://via.placeholder.com/50",
+            name: "Работодатель",
+            avatar: avatar2,
         },
     },
     {
         id: "3",
-        text: "Не забудьте проверить новое обновление системы.",
+        text: "Добрый день! Получили ваш запрос.",
         user: {
-            name: "Елена Петрова",
-            avatar: "https://via.placeholder.com/50",
+            name: "Работодатель",
+            avatar: avatar2,
         },
     },
 ];
@@ -61,7 +65,7 @@ const ChatScreen: React.FC = () => {
                 text: inputText,
                 user: {
                     name: "Вы",
-                    avatar: "https://via.placeholder.com/50",
+                    avatar: avatar1,
                 },
                 isUserMessage: true,
             };
@@ -74,14 +78,16 @@ const ChatScreen: React.FC = () => {
         const messageStyle = item.isUserMessage
             ? [tw`items-end`, styles.messageContainerRight]
             : tw`items-start`;
+
         return (
             <View style={[tw`flex-row mb-2`, messageStyle]}>
-                {item.isUserMessage && (
-                    <Image
-                        source={{ uri: item.user.avatar }}
-                        style={tw`w-10 h-10 rounded-full mr-2`}
-                    />
-                )}
+                <Image
+                    source={item.user.avatar}
+                    style={[
+                        tw`w-10 h-10 rounded-full`,
+                        item.isUserMessage ? { marginRight: 5 } : { marginLeft: 5 }, // Увеличиваем отступ на 3 пикселя
+                    ]}
+                />
                 <View style={tw`max-w-3/4`}>
                     {item.isUserMessage && (
                         <Text style={tw`text-sm text-gray-600`}>
@@ -105,18 +111,11 @@ const ChatScreen: React.FC = () => {
                         </Text>
                     </View>
                 </View>
-                {!item.isUserMessage && (
-                    <Image
-                        source={{ uri: item.user.avatar }}
-                        style={tw`w-10 h-10 rounded-full ml-2`}
-                    />
-                )}
             </View>
         );
     };
 
     return (
-      <>
         <SafeAreaView style={tw`flex-1 bg-gray-100`}>
             <View style={tw`flex-1 p-4`}>
                 <FlatList
@@ -143,8 +142,6 @@ const ChatScreen: React.FC = () => {
                 </TouchableOpacity>
             </View>
         </SafeAreaView>
-        <Footer/>
-        </>
     );
 };
 

@@ -1,81 +1,81 @@
 import React, { FC, useState, useEffect } from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer } from "@react-navigation/native";
-import LoadScreen from "../components/screens/load/LoadScreen"; // Импортируем экран загрузки
+import Icon from 'react-native-vector-icons/FontAwesome';
+import LoadScreen from "../components/screens/load/LoadScreen";
 import Auth from "../components/auth/Auth";
-import Home from "../components/screens/profile/ProfileScreen";
+import Home from "../components/home/Home";
 import Map from "../components/maps/Map";
-import FilterScreen from "../components/screens/filters/FilterScreen";
 import ProfileScreen from "../components/screens/profile/ProfileScreen";
 import ChatScreen from "../components/screens/chat/ChatScreen";
-import ServicesScreen from "../components/screens/services/ServicesScreen";
-import AdressScreen from "../components/screens/services/adress/AdressScreen";
-import Confidentiality from "../components/screens/confidentiality/Confidentiality";
-import FilterDeepScreen from "../components/screens/filters/FilterDeepScreen";
-import CompanyScreen from "../components/screens/filters/CompanyScreen";
 import { useAuth } from "../hooks/useAuth";
+import FilterScreen from "../components/FiltersVacancy/FiltersVacancy"; // Assuming you have this screen
+import TasksScreen from "../components/TasksScreen/TasksScreen"; // Ensure this path is correct
 
 const Stack = createNativeStackNavigator();
+const Tab = createBottomTabNavigator();
+
+const HomeTabs = () => {
+  return (
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
+        headerShown: false,
+        tabBarIcon: ({ focused, color, size }) => {
+          let iconName;
+
+          if (route.name === 'Home') {
+            iconName = 'home';
+          } else if (route.name === 'Map') {
+            iconName = 'map';
+          } else if (route.name === 'Tasks') {
+            iconName = 'tasks'; // Or another icon that fits
+          } else if (route.name === 'Chat') {
+            iconName = 'comments';
+          } else if (route.name === 'Profile') {
+            iconName = 'user';
+          }
+
+          return <Icon name={iconName} size={size} color={color} />;
+        },
+        tabBarActiveTintColor: '#59A9CC',
+        tabBarInactiveTintColor: 'gray',
+      })}
+    >
+      <Tab.Screen name="Home" component={Home} />
+      <Tab.Screen name="Map" component={Map} />
+      <Tab.Screen name="Chat" component={ChatScreen} />
+      <Tab.Screen name="Profile" component={ProfileScreen} />
+      <Tab.Screen name="Tasks" component={TasksScreen} /> 
+    </Tab.Navigator>
+  );
+};
 
 const Navigation: FC = () => {
     const { user } = useAuth();
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        // Имитация загрузки данных
         setTimeout(() => {
             setIsLoading(false);
-        }, 2000); // Время загрузки в миллисекундах
+        }, 2000);
     }, []);
 
     return (
         <NavigationContainer>
-            <Stack.Navigator
-                screenOptions={{ headerShown: false, animation: "none" }}
-            >
-                {isLoading ? ( // Показываем экран загрузки, пока isLoading === true
+            <Stack.Navigator screenOptions={{ headerShown: false, animation: "none" }}>
+                {isLoading ? (
                     <Stack.Screen name="LoadScreen" component={LoadScreen} />
-                ) : user ? ( // Если пользователь авторизован, показываем стандартные экраны
+                ) : user ? ( 
                     <>
-                        <Stack.Screen name="Map" component={Map} />
-                        <Stack.Screen name="Home" component={Home} />
-                        <Stack.Screen
-                            name="ChatScreen"
-                            component={ChatScreen}
-                        />
-                        <Stack.Screen
-                            name="ServicesScreen"
-                            component={ServicesScreen}
-                        />
-                        <Stack.Screen
-                            name="ProfileScreen"
-                            component={ProfileScreen}
-                        />
-                        <Stack.Screen
-                            name="FilterScreen"
-                            component={FilterScreen}
-                        />
-                        <Stack.Screen
-                            name="AdressScreen"
-                            component={AdressScreen}
-                        />
-                        <Stack.Screen
-                            name="Confidentiality"
-                            component={Confidentiality}
-                        />
-                        <Stack.Screen
-                            name="FilterDeepScreen"
-                            component={FilterDeepScreen}
-                        />
-                        <Stack.Screen
-                            name="CompanyScreen"
-                            component={CompanyScreen}
-                        />
+                        <Stack.Screen name="HomeTabs" component={HomeTabs} />
+                        <Stack.Screen name="FiltersScreen" component={FilterScreen} /> 
                     </>
-                ) : (
-                    // Если пользователь не авторизован, показываем экран авторизации
+                ) 
+                : (
                     <Stack.Screen name="Auth" component={Auth} />
-                )}
+                )
+                }
             </Stack.Navigator>
         </NavigationContainer>
     );

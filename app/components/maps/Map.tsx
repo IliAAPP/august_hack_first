@@ -10,11 +10,10 @@ import {
     Keyboard,
     Platform
 } from "react-native";
-import MapView, { Callout, Marker, PROVIDER_GOOGLE } from "react-native-maps";
-import { useNavigation } from "@react-navigation/native";
+import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import * as Location from "expo-location";
 import { markers } from "./markers";
-import Footer from "../screens/Footer";
 import haversine from "haversine-distance";
 import { FontAwesome5 } from "@expo/vector-icons";
 
@@ -24,6 +23,8 @@ type MarkerType = {
     latitudeDelta?: number;
     longitudeDelta?: number;
     name: string;
+    job: string;
+    salary: string;
 };
 
 const INITIAL_REGION = {
@@ -36,10 +37,51 @@ const INITIAL_REGION = {
 export default function Map() {
     const mapRef = useRef(null);
     const navigation = useNavigation();
+    const route = useRoute();
     const [searchText, setSearchText] = useState("");
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [hasLocationPermission, setHasLocationPermission] = useState(false);
     const [userLocation, setUserLocation] = useState(null);
+    const [filters, setFilters] = useState(null);
+    const [filteredMarkers, setFilteredMarkers] = useState(markers);
+
+    useEffect(() => {
+        if (route.params?.filters) {
+            setFilters(route.params.filters);
+        }
+    }, [route.params?.filters]);
+
+    useEffect(() => {
+        const filterMarkers = () => {
+            if (!filters) {
+                setFilteredMarkers(markers);
+                return;
+            }
+            const result = markers.filter((marker) => {
+                // Приведение всех строк в нижний регистр для корректного сравнения
+                const keywordMatch = filters.keywords
+                    ? marker.name.toLowerCase().includes(filters.keywords.toLowerCase())
+                    : true;
+                const salary = parseFloat(marker.salary.replace(/[^0-9.]/g, ''));
+                const salaryMatch = (
+                    (filters.salaryFrom ? salary >= filters.salaryFrom : true) &&
+                    (filters.salaryTo ? salary <= filters.salaryTo : true)
+                );
+                const locationMatch = filters.location
+                    ? marker.name.toLowerCase().includes(filters.location.toLowerCase())
+                    : true;
+                const hoursMatch = (
+                    (filters.hoursFrom ? parseInt(marker.job) >= filters.hoursFrom : true) &&
+                    (filters.hoursTo ? parseInt(marker.job) <= filters.hoursTo : true)
+                );
+                const dayMatch = filters.selectedDay ? marker.job.includes(filters.selectedDay) : true;
+
+                return keywordMatch && salaryMatch && locationMatch && hoursMatch && dayMatch;
+            });
+            setFilteredMarkers(result);
+        };
+        filterMarkers();
+    }, [filters]);
 
     useEffect(() => {
         (async () => {
@@ -49,7 +91,6 @@ export default function Map() {
                 return;
             }
             setHasLocationPermission(true);
-
             let location = await Location.getCurrentPositionAsync({});
             setUserLocation({
                 latitude: location.coords.latitude,
@@ -59,10 +100,6 @@ export default function Map() {
             });
         })();
     }, []);
-
-    const filteredMarkers = markers.filter((marker) =>
-        marker.name.toLowerCase().includes(searchText.toLowerCase())
-    );
 
     const zoomIn = () => {
         const currentRegion = mapRef.current?.getCamera();
@@ -99,6 +136,8 @@ export default function Map() {
             latitudeDelta: 0.1,
             longitudeDelta: 0.1,
             name: "Krasnodar",
+            job: "",
+            salary: "",
         };
         mapRef.current?.animateToRegion({
             latitude: KrasnodarCenter.latitude,
@@ -110,10 +149,6 @@ export default function Map() {
 
     const onMarkerSelected = (marker: MarkerType) => {
         Alert.alert(marker.name);
-    };
-
-    const calloutPressed = (ev: any) => {
-        console.log(ev);
     };
 
     const showUserLocation = async () => {
@@ -151,19 +186,9 @@ export default function Map() {
 
     const getDistanceText = (distance) => {
         if (distance < 1) {
-            return `${Math.round(distance * 1000)} \n м`;
+            return `${Math.round(distance * 1000)} м`;
         }
-        return `${distance.toFixed(1)} \n км`;
-    };
-
-    const getMarkerColor = (distance) => {
-        if (distance <= 2) {
-            return "green";
-        } else if (distance <= 3) {
-            return "yellow";
-        } else {
-            return "brown";
-        }
+        return `${distance.toFixed(1)} км`;
     };
 
     const renderSuggestionItem = ({ item }) => (
@@ -190,16 +215,24 @@ export default function Map() {
 
     return (
         <View style={{ flex: 1 }}>
-            <TextInput
-                style={styles.searchBar}
-                placeholder="Поиск по адресу..."
-                placeholderTextColor="white"
-                onChangeText={(text) => {
-                    setSearchText(text);
-                    setShowSuggestions(true);
-                }}
-                value={searchText}
-            />
+            <View style={styles.searchBarContainer}>
+                <TextInput
+                    style={styles.searchBar}
+                    placeholder="Поиск по адресу..."
+                    placeholderTextColor="white"
+                    onChangeText={(text) => {
+                        setSearchText(text);
+                        setShowSuggestions(true);
+                    }}
+                    value={searchText}
+                />
+                <TouchableOpacity
+                    onPress={() => navigation.navigate('FiltersScreen')}
+                    style={styles.filterButton}
+                >
+                    <Text style={styles.filterButtonText}>Фильтры</Text>
+                </TouchableOpacity>
+            </View>
             {showSuggestions && (
                 <FlatList
                     data={filteredMarkers}
@@ -218,13 +251,12 @@ export default function Map() {
                 onPress={() => {
                     setShowSuggestions(false);
                     setSearchText("");
-                    Keyboard.dismiss(); 
+                    Keyboard.dismiss();
                 }}
             >
                 {filteredMarkers.map((marker, index) => {
                     const distance = calculateDistance(marker);
                     const distanceText = getDistanceText(distance);
-                    const markerColor = getMarkerColor(distance);
                     return (
                         <Marker
                             key={index}
@@ -232,15 +264,12 @@ export default function Map() {
                             coordinate={marker}
                             onPress={() => onMarkerSelected(marker)}
                         >
-                            <View
-                                style={[
-                                    styles.marker,
-                                    { backgroundColor: markerColor },
-                                ]}
-                            >
-                                <Text style={styles.markerText}>
-                                    {distanceText}
-                                </Text>
+                            <View style={styles.markerContainer}>
+                                <View style={styles.infoBox}>
+                                    <Text style={styles.distanceText}>{distanceText}</Text>
+                                    <Text style={styles.jobText}>{marker.job}</Text>
+                                    <Text style={styles.salaryText}>{marker.salary}</Text>
+                                </View>
                             </View>
                         </Marker>
                     );
@@ -257,94 +286,98 @@ export default function Map() {
                     onPress={showUserLocation}
                     style={styles.locationButton}
                 >
-                    <Text style={styles.locationButtonText}>
-                        <FontAwesome5
-                            name="location-arrow"
-                            size={22}
-                            color="white"
-                        />
-                    </Text>
+                    <FontAwesome5
+                        name="location-arrow"
+                        size={22}
+                        color="white"
+                    />
                 </TouchableOpacity>
             </View>
-            <Footer />
         </View>
     );
 }
 
 const styles = StyleSheet.create({
-    searchBar: {
-        fontSize: 18,
+    searchBarContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
         margin: 10,
-        marginTop: 40,
-        padding: 10,
-        backgroundColor: "black",
-        color: "white",
+        marginTop: 55,
+        padding: 15,
+        backgroundColor: "#59A9CC",
         borderRadius: 10,
         zIndex: 1,
     },
+    searchBar: {
+        flex: 1,
+        fontSize: 18,
+        color: "white",
+    },
+    filterButton: {
+        marginLeft: 10,
+    },
+    filterButtonText: {
+        color: "white",
+        fontSize: 18,
+    },
     suggestionsList: {
+        backgroundColor: "#fff",
         position: "absolute",
-        top: 80,
+        top: 70,
         left: 10,
         right: 10,
-        backgroundColor: "white",
         zIndex: 2,
-        maxHeight: 200,
     },
     suggestionItem: {
-        backgroundColor: "white",
-        padding: 10,
-        borderBottomWidth: 1,
-        borderBottomColor: "lightgray",
+        padding: 15,
     },
     suggestionText: {
         fontSize: 18,
-        color: "black",
+    },
+    markerContainer: {
+        backgroundColor: 'rgba(255,255,255,0.8)',
+        borderRadius: 5,
+        padding: 5,
+    },
+    infoBox: {
+        alignItems: 'center',
+        padding: 5,
+        backgroundColor: '#ffffff',
+        borderRadius: 5,
+    },
+    distanceText: {
+        fontSize: 12,
+        color: '#000',
+    },
+    jobText: {
+        fontSize: 14,
+        fontWeight: 'bold',
+        color: '#000',
+    },
+    salaryText: {
+        fontSize: 12,
+        color: '#000',
     },
     rightCenterButtons: {
-        position: "absolute",
-        bottom: "50%",
+        position: 'absolute',
+        bottom: 20,
         right: 10,
-        flexDirection: "column",
-        alignItems: "center",
-    },
-    locationButton: {
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: "black",
-        marginVertical: 5,
-        width: 50,
-        height: 50,
-        borderRadius: 25,
-    },
-    locationButtonText: {
-        fontSize: 24,
-        color: "white",
+        alignItems: 'center',
     },
     zoomButton: {
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: "black",
-        marginVertical: 5,
-        width: 50,
-        height: 50,
-        borderRadius: 25,
+        backgroundColor: '#59A9CC',
+        borderRadius: 50,
+        margin: 10,
+        padding: 10,
     },
     zoomText: {
-        fontSize: 27,
-        color: "white",
+        color: '#fff',
+        fontSize: 20,
+        textAlign: 'center',    
     },
-    marker: {
-        backgroundColor: "white",
-        borderRadius: 100,
-        padding: 0,
-        minWidth: 40,
-        minHeight: 40,
-        alignItems: "center",
-        justifyContent: "center",
-    },
-    markerText: {
-        color: "black",
-        fontWeight: "bold",
+    locationButton: {
+        backgroundColor: '#59A9CC',
+        borderRadius: 50,
+        padding: 10,
     },
 });
