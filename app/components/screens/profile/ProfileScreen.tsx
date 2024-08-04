@@ -1,14 +1,53 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
+import axios from 'axios';
+
+interface User {
+  id: string;
+  email: string;
+  name: string; // Статическое значение
+  phone: string; // Статическое значение
+}
 
 const UserProfile = () => {
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Пример ID пользователя. В реальном приложении получите его из контекста, навигации или другого источника.
+  const userId = '67f08475-9086-4848-9b86-a248933477da';
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await axios.get(`http://10.2.0.152:3000/api/user/${userId}`);
+        setUser({
+          ...response.data,
+          name: ' Илья Апполонов',  // Замените на статическое значение
+          phone: '+722809987654',      // Замените на статическое значение
+        });
+      } catch (err: any) {
+        console.error('Error fetching user data:', err); // Вывод подробной информации об ошибке
+        setError('Failed to fetch user data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserData();
+  }, [userId]);
+
+  if (loading) return <Text>Loading...</Text>;
+  if (error) return <Text>{error}</Text>;
+  if (!user) return <Text>No user found</Text>;
+
   return (
     <ScrollView style={styles.container}>
       <View style={styles.profileHeader}>
         <Image source={require('../../../../assets/avatar_chat1.jpg')} style={styles.profileImage} />
         <View>
-          <Text style={styles.userName}>Михаил Васильевич</Text>
-          <Text style={styles.userPhone}>+7 (918) 068 21-72</Text>
+          <Text style={styles.userName}>{user.name}</Text>
+          <Text style={styles.userPhone}>{user.phone}</Text>
+          <Text style={styles.userEmail}>{user.email}</Text>
         </View>
       </View>
 
@@ -238,6 +277,11 @@ const styles = StyleSheet.create({
   menuText: {
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  userEmail: {
+    fontSize: 14,
+    color: '#888',
+    marginTop: 5,
   },
 });
 
