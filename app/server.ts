@@ -4,7 +4,6 @@ import { PrismaClient } from '@prisma/client';
 const app = express();
 const prisma = new PrismaClient();
 
-// Простой CORS Middleware
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
@@ -14,7 +13,6 @@ app.use((req, res, next) => {
 
 app.use(express.json());
 
-// API для получения данных пользователя по ID
 app.get('/api/user/:id', async (req, res) => {
   const { id } = req.params;
   try {
@@ -31,7 +29,24 @@ app.get('/api/user/:id', async (req, res) => {
   }
 });
 
-// Слушаем на всех интерфейсах и порту 3000
+app.get('/api/user/:id/bonus-card', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const bonusCard = await prisma.bonusCard.findUnique({
+      where: { userId: id },
+    });
+    console.log(bonusCard);
+    if (bonusCard) {
+      res.json(bonusCard);
+    } else {
+      res.status(404).json({ error: 'Bonus card not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+
 app.listen(3000, '0.0.0.0', () => {
   console.log('Server is running on port 3000');
 });

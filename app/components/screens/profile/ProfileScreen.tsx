@@ -5,29 +5,39 @@ import axios from 'axios';
 interface User {
   id: string;
   email: string;
-  name: string; // Статическое значение
-  phone: string; // Статическое значение
+  name: string;
+  phone: string;
+}
+
+interface BonusCard {
+  cardNumber: string;
+  balance: number;
+  frozenBalance: number;
 }
 
 const UserProfile = () => {
   const [user, setUser] = useState<User | null>(null);
+  const [bonusCard, setBonusCard] = useState<BonusCard | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Пример ID пользователя. В реальном приложении получите его из контекста, навигации или другого источника.
   const userId = '67f08475-9086-4848-9b86-a248933477da';
+
   useEffect(() => {
     const fetchUserData = async () => {
       try {
         const response = await axios.get(`http://10.2.0.152:3000/api/user/${userId}`);
         setUser({
           ...response.data,
-          name: ' Илья Апполонов',  // Замените на статическое значение
-          phone: '+722809987654',      // Замените на статическое значение
+          name: 'Илья Апполонов',
+          phone: '+722809987654',
         });
+
+        const bonusCardResponse = await axios.get(`http://10.2.0.152:3000/api/user/${userId}/bonus-card`);
+        setBonusCard(bonusCardResponse.data);
       } catch (err: any) {
-        console.error('Error fetching user data:', err); // Вывод подробной информации об ошибке
-        setError('Failed to fetch user data');
+        console.error('Error fetching data:', err);
+        setError('Failed to fetch data');
       } finally {
         setLoading(false);
       }
@@ -38,7 +48,7 @@ const UserProfile = () => {
 
   if (loading) return <Text>Loading...</Text>;
   if (error) return <Text>{error}</Text>;
-  if (!user) return <Text>No user found</Text>;
+  if (!user || !bonusCard) return <Text>No user or bonus card found</Text>;
 
   return (
     <ScrollView style={styles.container}>
@@ -62,13 +72,13 @@ const UserProfile = () => {
       <View style={styles.cardTop}>
         <Text style={styles.cardTitle}>Карта для получения выплат</Text>
         <View style={styles.cardNumberContainer}>
-          <Text style={styles.cardNumber}>0000 0000 0000 0000</Text>
+          <Text style={styles.cardNumber}>{bonusCard.cardNumber}</Text>
         </View>
       </View>
       <View style={styles.cardBottom}>
         <View>
-          <Text style={styles.balance}>13 000 ₽</Text>
-          <Text style={styles.frozenBalance}>и 3 000 ₽ в заморозке</Text>
+          <Text style={styles.balance}>{bonusCard.balance} ₽</Text>
+          <Text style={styles.frozenBalance}>и {bonusCard.frozenBalance} ₽ в заморозке</Text>
         </View>
         <View style={styles.actionsContainer}>
           <TouchableOpacity style={styles.actionButton}>
@@ -126,7 +136,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     marginBottom: 10,
     fontWeight: '600',
-    paddingVertical: 10
+    paddingVertical: 10,
   },
   cardNumberContainer: {
     backgroundColor: '#fff',
@@ -148,7 +158,7 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 15,
     borderBottomRightRadius: 15,
     backgroundColor: '#58A6C8',
-    marginBottom: 10
+    marginBottom: 10,
   },
   balance: {
     color: '#fff',
